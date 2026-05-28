@@ -1,10 +1,12 @@
-# Acosta-Food-# 🚀 DeliveryApp – Sistema de pedidos con GPS y QR
+# 🚀 DeliveryApp – Sistema de pedidos con GPS, QR y Multilenguaje
 
 ## 📖 Descripción
 DeliveryApp es un ecosistema modular tipo Uber Eats que incluye:
 - **App Cliente** → pedidos, seguimiento GPS, pagos, QR menú.  
 - **App Restaurante** → subida de imágenes, gestión de pedidos, QR dinámico.  
-- **App Súper Admin** → panel global con métricas, mapa de repartidores y control de usuarios.
+- **App Súper Admin** → panel global con métricas, mapa de repartidores y control de usuarios.  
+
+El sistema soporta **multilenguaje**: Español, Inglés, Bribri, Cabécar y Boruca, promoviendo la inclusión y la preservación de lenguas indígenas.
 
 ---
 
@@ -15,6 +17,7 @@ DeliveryApp es un ecosistema modular tipo Uber Eats que incluye:
 - **Mapas:** Google Maps API.  
 - **Pagos:** Stripe / SINPE.  
 - **QR:** `react-native-qrcode-svg`.  
+- **Multilenguaje:** i18n con soporte para Español, Inglés, Bribri, Cabécar y Boruca.  
 
 ---
 
