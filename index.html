@@ -6,135 +6,234 @@
   <title>Cantones Food - Delivery Local</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
-    .hero-green { background: linear-gradient(135deg, #166534, #4ade80); }
     .restaurant-card { transition: all 0.3s; }
-    .restaurant-card:hover { transform: translateY(-8px); }
+    .restaurant-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
   </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 
   <!-- HEADER -->
-  <header class="bg-white shadow-sm sticky top-0 z-50">
+  <header class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
     <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 bg-green-700 rounded-2xl flex items-center justify-center text-white text-2xl">🌿</div>
         <div>
-          <h1 class="text-2xl font-bold text-green-800">Cantones Food</h1>
-          <p class="text-xs text-green-600 -mt-1">Acosta • Aserrí</p>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-2 text-sm">
-        <i class="fa-solid fa-location-dot text-green-600"></i>
-        <div>
-          <p class="font-medium">Aserrí, San José</p>
-          <p class="text-xs text-gray-500">Entrega en 20-35 min</p>
+          <h1 class="text-2xl font-bold text-green-800 dark:text-green-400">Cantones Food</h1>
+          <p class="text-xs text-green-600">Acosta • Aserrí</p>
         </div>
       </div>
 
       <div class="flex-1 max-w-md mx-6">
         <div class="relative">
-          <input type="text" id="search" placeholder="¿Qué se te antoja hoy?" 
-                 class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-3xl focus:outline-none focus:border-green-600 text-sm"/>
+          <input id="search-input" type="text" placeholder="¿Qué se te antoja hoy?" 
+                 class="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-700 rounded-3xl focus:outline-none focus:border-green-600 dark:bg-gray-700"/>
           <i class="fa-solid fa-magnifying-glass absolute left-5 top-3.5 text-gray-400"></i>
         </div>
       </div>
 
-      <button onclick="toggleCart()" class="relative flex items-center gap-2 bg-green-50 px-5 py-2 rounded-3xl hover:bg-green-100">
-        <i class="fa-solid fa-shopping-cart text-xl text-green-700"></i>
-        <span id="cart-count" class="bg-green-600 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">0</span>
-      </button>
+      <div class="flex items-center gap-4">
+        <button onclick="toggleDarkMode()" class="text-xl"><i class="fa-solid fa-moon"></i></button>
+        <button onclick="toggleCart()" class="relative flex items-center gap-2 bg-green-50 dark:bg-green-900 px-5 py-2 rounded-3xl">
+          <i class="fa-solid fa-shopping-cart text-xl text-green-700"></i>
+          <span id="cart-count" class="bg-green-600 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">0</span>
+        </button>
+      </div>
     </div>
   </header>
 
-  <!-- HERO / BANNER -->
-  <div class="hero-green text-white py-12">
+  <!-- HERO -->
+  <div class="bg-gradient-to-br from-green-700 to-green-600 text-white py-12">
     <div class="max-w-6xl mx-auto px-4 text-center">
       <h2 class="text-4xl font-bold mb-3">¿Hambre?</h2>
-      <p class="text-xl mb-8">Pedí de tus locales favoritos de Acosta y Aserrí</p>
-      <button onclick="verRestaurantes()" 
-              class="bg-white text-green-700 font-semibold text-lg px-10 py-4 rounded-3xl shadow-lg hover:scale-105 transition">
-        🌮 VER RESTAURANTES
-      </button>
-      <p class="text-sm mt-4 opacity-90">Entrar como cliente sin cuenta</p>
+      <p class="text-xl">Pedí de tus locales favoritos de Acosta y Aserrí</p>
     </div>
   </div>
 
-  <div class="max-w-6xl mx-auto px-4 py-8">
+  <!-- FILTROS -->
+  <div class="max-w-6xl mx-auto px-4 py-4 flex gap-3 flex-wrap">
+    <button onclick="filterCategory('all')" class="active-filter px-5 py-2 rounded-3xl border border-green-600 text-green-600">Todos</button>
+    <button onclick="filterCategory('Comida Típica')" class="px-5 py-2 rounded-3xl border hover:bg-gray-100">Comida Típica</button>
+    <button onclick="filterCategory('Pizza')" class="px-5 py-2 rounded-3xl border hover:bg-gray-100">Pizza</button>
+    <button onclick="filterCategory('Hamburguesas')" class="px-5 py-2 rounded-3xl border hover:bg-gray-100">Hamburguesas</button>
+    <button onclick="filterCategory('Sushi')" class="px-5 py-2 rounded-3xl border hover:bg-gray-100">Sushi</button>
+  </div>
+
+  <div class="max-w-6xl mx-auto px-4">
     <h3 class="font-semibold text-xl mb-6">Restaurantes cerca de ti</h3>
-    
-    <div id="restaurants" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Se llenan con JavaScript -->
+    <div id="restaurants" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </div>
+
+  <!-- ACCESO RESTAURANTES -->
+  <div class="max-w-6xl mx-auto px-4 py-12 text-center">
+    <button onclick="showAdminLogin()" class="flex items-center gap-3 mx-auto bg-white dark:bg-gray-800 border-2 border-green-200 hover:border-green-600 px-8 py-4 rounded-3xl text-lg font-medium">
+      <i class="fa-solid fa-lock text-green-600"></i>
+      Acceso Administradores y Restaurantes
+    </button>
+  </div>
+
+  <!-- MODAL MENÚ -->
+  <div id="menu-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-lg max-h-[90vh] flex flex-col">
+      <div class="p-6 border-b flex justify-between">
+        <h2 id="modal-name" class="text-2xl font-bold"></h2>
+        <button onclick="closeMenuModal()" class="text-3xl">×</button>
+      </div>
+      <div class="p-6 border-b bg-gray-50 dark:bg-gray-700">
+        <button onclick="showLocation()" class="flex items-center gap-2 text-green-600 hover:text-green-700">
+          <i class="fa-solid fa-location-dot"></i>
+          <span>Ver ubicación en mapa</span>
+        </button>
+        <p id="modal-address" class="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+      </div>
+      <div id="menu-content" class="flex-1 overflow-auto p-6"></div>
+    </div>
+  </div>
+
+  <!-- MAPA -->
+  <div id="map-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[60]">
+    <div class="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-2xl overflow-hidden">
+      <div class="p-4 border-b flex justify-between">
+        <h3 id="map-title" class="font-semibold"></h3>
+        <button onclick="closeMapModal()" class="text-2xl">×</button>
+      </div>
+      <div id="map" class="h-96"></div>
     </div>
   </div>
 
   <!-- CARRITO -->
-  <div id="cart-sidebar" class="fixed right-0 top-0 h-full w-96 bg-white shadow-2xl translate-x-full transition-transform duration-300 z-50 overflow-y-auto">
+  <div id="cart-sidebar" class="fixed right-0 top-0 h-full w-96 bg-white dark:bg-gray-800 shadow-2xl translate-x-full transition-transform z-50 overflow-y-auto">
     <div class="p-6">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-green-800">Tu Pedido</h2>
-        <button onclick="toggleCart()" class="text-3xl text-gray-400">✕</button>
+      <div class="flex justify-between mb-6">
+        <h2 class="text-2xl font-bold">Tu Pedido</h2>
+        <button onclick="toggleCart()" class="text-3xl">×</button>
       </div>
       <div id="cart-items" class="space-y-4"></div>
-      
-      <div class="border-t pt-6 mt-8">
-        <div class="flex justify-between text-xl font-semibold">
+      <div class="border-t pt-6 mt-6">
+        <div class="flex justify-between text-xl font-bold">
           <span>Total</span>
-          <span id="total-price">$0</span>
+          <span id="total-price">₡0</span>
         </div>
-        <button onclick="checkout()" class="w-full bg-green-700 text-white py-4 rounded-3xl mt-6 text-lg font-semibold">
-          Confirmar Pedido
-        </button>
+        <button onclick="confirmOrder()" class="w-full bg-green-700 text-white py-4 rounded-3xl mt-6 text-lg font-semibold">Confirmar Pedido</button>
       </div>
     </div>
   </div>
 
+  <!-- LOGIN -->
+  <div id="login-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 w-full max-w-md">
+      <h2 class="text-2xl font-bold text-center mb-6">Acceso Restaurantes</h2>
+      <input id="user" type="text" placeholder="Usuario" class="w-full px-4 py-3 border rounded-2xl mb-4" value="aserrí"/>
+      <input id="pass" type="password" placeholder="Contraseña" class="w-full px-4 py-3 border rounded-2xl mb-6" value="1234"/>
+      <button onclick="loginAsRestaurant()" class="w-full bg-green-700 text-white py-4 rounded-2xl font-semibold">Ingresar</button>
+      <p class="text-center text-xs text-gray-500 mt-4">Demo: aserrí / 1234</p>
+    </div>
+  </div>
+
   <script>
+    // Datos
     const restaurants = [
-      { id:1, name:"Soda La Esquina", category:"Comida Típica", time:"15-25 min", rating:4.9, price:"$", img:"https://picsum.photos/id/201/400/250" },
-      { id:2, name:"Pizzería Don Pepe", category:"Pizza", time:"20-30 min", rating:4.7, price:"$$", img:"https://picsum.photos/id/292/400/250" },
-      { id:3, name:"Burger Acosta", category:"Hamburguesas", time:"18-28 min", rating:4.8, price:"$", img:"https://picsum.photos/id/20/400/250" },
-      { id:4, name:"Sushi Aserrí", category:"Sushi", time:"25-35 min", rating:4.6, price:"$$$", img:"https://picsum.photos/id/133/400/250" }
+      { id:1, name:"Soda La Esquina", category:"Comida Típica", time:"15-25 min", rating:4.9, address:"Aserrí centro", lat:9.8625, lng:-84.0923 },
+      { id:2, name:"Pizzería Don Pepe", category:"Pizza", time:"20-30 min", rating:4.7, address:"Acosta, ruta a Frailes", lat:9.8150, lng:-84.1500 },
+      { id:3, name:"Burger Acosta", category:"Hamburguesas", time:"18-28 min", rating:4.8, address:"Acosta centro", lat:9.8100, lng:-84.1600 },
+      { id:4, name:"Sushi Aserrí", category:"Sushi", time:"25-35 min", rating:4.6, address:"Aserrí, Barrio San Juan", lat:9.8600, lng:-84.1000 }
     ];
 
-    let cart = [];
+    const menus = {
+      1: [
+        {name:"Casado con Pollo", price:4500, desc:"Arroz, frijoles, ensalada y carne"},
+        {name:"Olla de Carne", price:5200, desc:"Con viandas y sopa"},
+        {name:"Gallo Pinto con Huevos", price:3800, desc:"Desayuno típico"}
+      ],
+      2: [
+        {name:"Pizza Margherita", price:8900},
+        {name:"Pizza Hawaiana", price:9500},
+        {name:"Pizza Pepperoni", price:9800}
+      ],
+      3: [
+        {name:"Hamburguesa Clásica", price:4800},
+        {name:"Cheeseburger Doble", price:6200},
+        {name:"Papas Fritas", price:2500}
+      ],
+      4: [
+        {name:"Roll California", price:6500},
+        {name:"Sashimi Mixto", price:8900},
+        {name:"Temaki Salmón", price:4200}
+      ]
+    };
 
-    function renderRestaurants() {
+    let cart = [];
+    let currentRestaurant = null;
+    let mapInstance = null;
+    let currentFilter = 'all';
+
+    function renderRestaurants(filteredRestaurants = restaurants) {
       const container = document.getElementById('restaurants');
-      container.innerHTML = restaurants.map(r => `
-        <div class="restaurant-card bg-white rounded-3xl overflow-hidden shadow-md">
-          <img src="${r.img}" class="w-full h-48 object-cover"/>
+      container.innerHTML = filteredRestaurants.map(r => `
+        <div class="restaurant-card bg-white dark:bg-gray-800 rounded-3xl shadow overflow-hidden">
+          <div class="h-52 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900 dark:to-green-800 flex items-center justify-center text-7xl">
+            ${r.category.includes('Pizza') ? '🍕' : r.category.includes('Sushi') ? '🍣' : '🍲'}
+          </div>
           <div class="p-5">
-            <div class="flex justify-between items-start">
-              <div>
-                <h4 class="font-bold text-lg">${r.name}</h4>
-                <p class="text-green-600 text-sm">${r.category}</p>
-              </div>
-              <div class="text-right">
-                <span class="text-yellow-500">★ ${r.rating}</span>
-              </div>
-            </div>
-            <p class="text-sm text-gray-500 mt-1">${r.time} • ${r.price}</p>
-            <button onclick="addToCart(${r.id})" 
-                    class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-2xl font-medium">
-              Ver menú
+            <h4 class="font-bold text-xl">${r.name}</h4>
+            <p class="text-green-600">${r.category} • ${r.time}</p>
+            <p class="text-xs text-gray-500 mt-1">${r.address}</p>
+            <button onclick="showMenu(${r.id})" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-2xl font-medium">
+              Ver Menú
             </button>
           </div>
         </div>
       `).join('');
     }
 
-    function addToCart(id) {
-      const item = {
-        id: Date.now(),
-        name: "Casado con Pollo",
-        price: 4500,
-        qty: 1
-      };
-      cart.push(item);
+    function filterCategory(cat) {
+      currentFilter = cat;
+      const filtered = cat === 'all' ? restaurants : restaurants.filter(r => r.category === cat);
+      renderRestaurants(filtered);
+    }
+
+    function showMenu(id) {
+      currentRestaurant = restaurants.find(r => r.id === id);
+      document.getElementById('modal-name').textContent = currentRestaurant.name;
+      document.getElementById('modal-address').textContent = currentRestaurant.address;
+
+      const html = menus[id].map(item => `
+        <div class="flex justify-between items-center py-4 border-b last:border-none">
+          <div>
+            <p class="font-medium">${item.name}</p>
+            <p class="text-sm text-gray-500">${item.desc || ''}</p>
+          </div>
+          <div class="text-right">
+            <p class="font-bold">₡${item.price}</p>
+            <button onclick="addToCart('${item.name}', ${item.price})" class="mt-2 text-green-600 hover:text-green-700 text-sm font-medium">Añadir</button>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('menu-content').innerHTML = html;
+      document.getElementById('menu-modal').classList.remove('hidden');
+    }
+
+    function showLocation() {
+      if (!currentRestaurant) return;
+      closeMenuModal();
+      document.getElementById('map-title').textContent = currentRestaurant.name;
+      document.getElementById('map-modal').classList.remove('hidden');
+
+      setTimeout(() => {
+        if (mapInstance) mapInstance.remove();
+        mapInstance = L.map('map').setView([currentRestaurant.lat, currentRestaurant.lng], 16);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstance);
+        L.marker([currentRestaurant.lat, currentRestaurant.lng]).addTo(mapInstance)
+         .bindPopup(`<b>${currentRestaurant.name}</b><br>${currentRestaurant.address}`).openPopup();
+      }, 100);
+    }
+
+    function addToCart(name, price) {
+      cart.push({id: Date.now(), name, price, qty: 1});
       updateCart();
-      alert("¡Añadido al carrito!");
     }
 
     function updateCart() {
@@ -142,22 +241,76 @@
     }
 
     function toggleCart() {
-      document.getElementById('cart-sidebar').classList.toggle('translate-x-full');
+      const sidebar = document.getElementById('cart-sidebar');
+      sidebar.classList.toggle('translate-x-full');
+      renderCart();
     }
 
-    function checkout() {
-      if (cart.length === 0) return alert("Tu carrito está vacío");
-      alert("¡Pedido confirmado! Gracias por elegir Cantones Food ❤️");
+    function renderCart() {
+      const container = document.getElementById('cart-items');
+      let total = 0;
+      container.innerHTML = cart.map((item, index) => {
+        total += item.price * item.qty;
+        return `
+          <div class="flex justify-between items-center">
+            <div>
+              <p>${item.name}</p>
+              <p class="text-sm text-gray-500">₡${item.price} x ${item.qty}</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button onclick="changeQty(${index}, -1)" class="text-xl">-</button>
+              <span>${item.qty}</span>
+              <button onclick="changeQty(${index}, 1)" class="text-xl">+</button>
+              <button onclick="removeFromCart(${index})" class="ml-4 text-red-500">🗑</button>
+            </div>
+          </div>`;
+      }).join('');
+      document.getElementById('total-price').textContent = `₡${total}`;
+    }
+
+    function changeQty(index, change) {
+      cart[index].qty = Math.max(1, cart[index].qty + change);
+      renderCart();
+    }
+
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      renderCart();
+      updateCart();
+    }
+
+    function confirmOrder() {
+      if (cart.length === 0) return alert("Carrito vacío");
+      alert("🎉 ¡Pedido confirmado!\n\nTu comida llegará en aproximadamente 25 minutos.\n\nGracias por elegir Cantones Food ❤️");
       cart = [];
       updateCart();
       toggleCart();
     }
 
-    function verRestaurantes() {
-      document.getElementById('restaurants').scrollIntoView({ behavior: "smooth" });
+    function closeMenuModal() { document.getElementById('menu-modal').classList.add('hidden'); }
+    function closeMapModal() { document.getElementById('map-modal').classList.add('hidden'); }
+
+    function showAdminLogin() {
+      document.getElementById('login-modal').classList.remove('hidden');
     }
 
-    // Iniciar
+    function loginAsRestaurant() {
+      alert("✅ Acceso concedido al panel de restaurante.\n\nPuedes ver pedidos entrantes aquí (simulación).");
+      document.getElementById('login-modal').classList.add('hidden');
+    }
+
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark');
+    }
+
+    // Búsqueda
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase();
+      const filtered = restaurants.filter(r => r.name.toLowerCase().includes(term) || r.category.toLowerCase().includes(term));
+      renderRestaurants(filtered);
+    });
+
+    // Inicializar
     renderRestaurants();
   </script>
 </body>
