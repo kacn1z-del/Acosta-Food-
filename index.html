@@ -3,206 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cantones Food Pro</title>
+    <title>Cantones Food - Acosta</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
         * { font-family: 'Poppins', sans-serif; }
-        .gradient-green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-        .glass-effect { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); }
-        .card-hover:hover { transform: translateY(-5px); }
+        .gradient-green { background: linear-gradient(135deg, #10b981, #059669); }
+        .gradient-pink { background: linear-gradient(135deg, #ec4899, #db2777); }
+        .glass { background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); }
+        .tab-active { border-bottom: 3px solid #ec4899; color: #ec4899; font-weight: 600; }
     </style>
 </head>
 <body class="bg-gray-50">
 
-<!-- LOGIN -->
-<div id="loginScreen" class="min-h-screen flex items-center justify-center gradient-green">
-    <div class="glass-effect rounded-3xl p-8 w-full max-w-md shadow-2xl">
-        <div class="text-center mb-8">
-            <i class="fas fa-utensils text-5xl text-white mb-4"></i>
-            <h1 class="text-3xl font-bold text-gray-800">Cantones Food Pro</h1>
+<!-- LANDING PAGE -->
+<div id="landing" class="min-h-screen flex items-center justify-center gradient-green">
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div class="bg-green-700 text-white p-8 text-center">
+            <div class="flex justify-center mb-4">
+                <span class="text-6xl">🌿</span>
+            </div>
+            <h1 class="text-4xl font-bold">Cantones Food</h1>
+            <p class="mt-2">El sabor de Acosta y Aserrí en tu celular</p>
         </div>
-        <form id="loginForm" class="space-y-4">
-            <input type="text" id="username" placeholder="Usuario" class="w-full px-4 py-3 rounded-2xl border" required>
-            <input type="password" id="password" placeholder="Contraseña" class="w-full px-4 py-3 rounded-2xl border" required>
-            <button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-2xl font-semibold">Iniciar Sesión</button>
-        </form>
-        <p class="text-center text-sm mt-4 text-gray-600">
-            cliente / 1234<br>admin / admin
-        </p>
+        <div class="p-8">
+            <p class="text-center text-xl font-medium mb-6">¿Hambre? Pedí de tus locales favoritos</p>
+            
+            <button onclick="showRestaurants()" 
+                    class="w-full bg-green-500 hover:bg-green-600 text-white py-5 rounded-2xl text-xl font-semibold flex items-center justify-center gap-3 mb-4">
+                🍽️ VER RESTAURANTES
+            </button>
+            
+            <button onclick="showLogin()" 
+                    class="w-full border border-gray-300 py-4 rounded-2xl flex items-center justify-center gap-2 text-gray-700">
+                🔑 Acceso Administradores y Restaurantes
+            </button>
+        </div>
     </div>
+</div>
+
+<!-- LISTA DE RESTAURANTES -->
+<div id="restaurantsList" class="hidden min-h-screen bg-gray-50 p-6">
+    <h1 class="text-3xl font-bold mb-6">Restaurantes Disponibles</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="restaurantCards"></div>
 </div>
 
 <!-- CLIENT VIEW -->
 <div id="clientView" class="hidden min-h-screen">
-    <!-- (El mismo cliente de antes - funciona bien) -->
-    <header class="gradient-green p-4 flex justify-between items-center sticky top-0">
-        <h1 class="text-white text-2xl font-bold">Cantones Food</h1>
-        <div class="flex gap-4">
-            <button onclick="toggleCart()" class="text-white relative">
-                <i class="fas fa-shopping-cart text-2xl"></i>
-                <span id="cartBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
-            </button>
-            <button onclick="logout()" class="text-white"><i class="fas fa-sign-out-alt text-2xl"></i></button>
-        </div>
-    </header>
+    <!-- Header + Menú + Checkout se cargan dinámicamente -->
+</div>
 
-    <div class="max-w-7xl mx-auto p-6">
-        <!-- Galería -->
-        <div class="mb-8">
-            <h2 class="text-xl font-bold mb-4">📸 Nuestro Local</h2>
-            <div id="gallery" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
-        </div>
-        <!-- Menú -->
-        <h2 class="text-2xl font-bold mb-4">Menú</h2>
-        <div id="categoryFilters" class="flex gap-2 overflow-x-auto pb-4"></div>
-        <div id="menuGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+<!-- LOGIN -->
+<div id="loginModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <div class="glass rounded-3xl p-8 w-full max-w-sm">
+        <h2 class="text-2xl font-bold mb-6">Iniciar Sesión</h2>
+        <input id="loginUser" placeholder="Usuario" class="w-full p-4 rounded-2xl border mb-3">
+        <input id="loginPass" type="password" placeholder="Contraseña" class="w-full p-4 rounded-2xl border mb-6">
+        <button onclick="handleLogin()" class="w-full gradient-pink text-white py-4 rounded-2xl font-semibold">Entrar</button>
+        <button onclick="hideLogin()" class="w-full mt-3 text-gray-500">Cancelar</button>
     </div>
 </div>
 
-<!-- ADMIN VIEW - Mejorado -->
-<div id="adminView" class="hidden min-h-screen bg-gray-100">
-    <div class="p-6">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold">Panel de Administrador</h1>
-            <button onclick="logout()" class="bg-red-500 text-white px-6 py-2 rounded-xl">Cerrar Sesión</button>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-3xl shadow">
-                <h3 class="text-gray-500">Pedidos Hoy</h3>
-                <p class="text-4xl font-bold text-emerald-600 mt-2">12</p>
-            </div>
-            <div class="bg-white p-6 rounded-3xl shadow">
-                <h3 class="text-gray-500">Ingresos Hoy</h3>
-                <p class="text-4xl font-bold text-emerald-600 mt-2">₡87,450</p>
-            </div>
-            <div class="bg-white p-6 rounded-3xl shadow">
-                <h3 class="text-gray-500">Productos</h3>
-                <p class="text-4xl font-bold text-emerald-600 mt-2" id="productCount">8</p>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-3xl shadow p-6">
-            <h2 class="font-bold text-xl mb-4">Productos del Menú</h2>
-            <div id="adminProductList" class="space-y-4"></div>
+<!-- PANEL RESTAURANTE / SUPER ADMIN -->
+<div id="adminPanel" class="hidden min-h-screen bg-gray-100">
+    <div class="gradient-pink text-white p-4 flex justify-between items-center">
+        <h1 id="panelTitle" class="text-2xl font-bold">Panel de Restaurante</h1>
+        <div class="flex gap-4">
+            <button onclick="togglePause()" id="pauseBtn" class="px-5 py-2 bg-white/20 rounded-xl">Pausar Pedidos</button>
+            <button onclick="logout()" class="px-5 py-2 bg-white/20 rounded-xl">Cerrar Sesión</button>
         </div>
     </div>
+    <div class="flex border-b">
+        <button onclick="switchTab(0)" class="tab px-6 py-4 tab-active">Dashboard</button>
+        <button onclick="switchTab(1)" class="tab px-6 py-4">Productos</button>
+        <button onclick="switchTab(2)" class="tab px-6 py-4">Órdenes</button>
+        <button onclick="switchTab(3)" class="tab px-6 py-4">Configuración</button>
+    </div>
+    <div id="adminContent" class="p-6"></div>
 </div>
 
 <script>
-// ==================== DATOS EDITABLES ====================
-let products = [
-    { id: 1, name: "Arroz Cantones Especial", price: 4500, category: "Platos Fuertes", description: "Arroz frito con mariscos", image: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400" },
-    { id: 2, name: "Chop Suey de Pollo", price: 4200, category: "Platos Fuertes", description: "Pollo con vegetales", image: "https://images.unsplash.com/photo-1563379091339-03b21ab6c5e0?w=400" },
-    { id: 3, name: "Wonton Frito", price: 2800, category: "Entradas", description: "Empanaditas chinas", image: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=400" }
-    // Agrega más aquí
-];
-
-const restaurantPhotos = [
-    "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600",
-    "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=600",
-    "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600"
-];
-
+// ==================== DATOS ====================
+let currentRole = null;
+let currentRestaurant = null;
+let isPaused = false;
 let cart = [];
 
-// ==================== LOGIN ====================
-document.getElementById('loginForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const user = document.getElementById('username').value.trim().toLowerCase();
-    const pass = document.getElementById('password').value.trim();
+const restaurants = [
+    {
+        id: 1,
+        name: "Cantones Food Pro",
+        type: "Cantonesa",
+        color: "green",
+        products: [
+            {id:1, name:"Arroz Cantones Especial", price:4500, desc:"Arroz frito con mariscos", img:"https://picsum.photos/id/201/400/300"},
+            {id:2, name:"Chop Suey Pollo", price:4200, desc:"Pollo con vegetales", img:"https://picsum.photos/id/292/400/300"}
+        ]
+    },
+    {
+        id: 2,
+        name: "El Guila",
+        type: "Comida Típica",
+        color: "pink",
+        products: [
+            {id:3, name:"Casado con Carne", price:6000, desc:"Arroz, frijoles, carne, ensalada", img:"https://picsum.photos/id/431/400/300"}
+        ]
+    }
+];
 
-    if ((user === 'cliente' && pass === '1234') || (user === 'admin' && pass === 'admin')) {
-        document.getElementById('loginScreen').classList.add('hidden');
-        if (user === 'admin') {
-            document.getElementById('adminView').classList.remove('hidden');
-            renderAdminProducts();
-        } else {
-            document.getElementById('clientView').classList.remove('hidden');
-            renderGallery();
-            renderCategories();
-            renderMenu();
-        }
+// ==================== NAVEGACIÓN ====================
+function showRestaurants() {
+    document.getElementById('landing').classList.add('hidden');
+    const container = document.getElementById('restaurantsList');
+    container.classList.remove('hidden');
+    
+    container.querySelector('#restaurantCards').innerHTML = restaurants.map(r => `
+        <div onclick="selectRestaurant(${r.id})" class="bg-white rounded-3xl shadow-xl overflow-hidden cursor-pointer hover:scale-105 transition">
+            <img src="${r.products[0].img}" class="w-full h-52 object-cover">
+            <div class="p-6">
+                <h3 class="font-bold text-2xl">${r.name}</h3>
+                <p class="text-gray-600">${r.type}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+function selectRestaurant(id) {
+    currentRestaurant = restaurants.find(r => r.id === id);
+    document.getElementById('restaurantsList').classList.add('hidden');
+    loadClientView();
+}
+
+function loadClientView() {
+    document.getElementById('clientView').classList.remove('hidden');
+    // Aquí iría el menú completo del restaurante seleccionado
+    alert(`Bienvenido a ${currentRestaurant.name} 🍽️\n\n(El menú completo se cargaría aquí)`);
+}
+
+// ==================== LOGIN ====================
+function showLogin() {
+    document.getElementById('loginModal').classList.remove('hidden');
+}
+
+function hideLogin() {
+    document.getElementById('loginModal').classList.add('hidden');
+}
+
+function handleLogin() {
+    const user = document.getElementById('loginUser').value.trim();
+    const pass = document.getElementById('loginPass').value.trim();
+
+    if (user === 'elguila' && pass === 'casado6000') {
+        currentRole = 'restaurant';
+        loadAdminPanel("El Guila");
+    } else if (user === 'vendedor' && pass === 'acosta2026') {
+        currentRole = 'superadmin';
+        loadAdminPanel("Super Admin");
+    } else if (user === 'cliente' && pass === '1234') {
+        alert("Acceso como cliente normal");
     } else {
         alert("Credenciales incorrectas");
     }
-});
-
-function logout() { location.reload(); }
-
-// ==================== CLIENTE ====================
-function renderGallery() {
-    document.getElementById('gallery').innerHTML = restaurantPhotos.map(src => 
-        `<img src="${src}" class="rounded-2xl h-40 w-full object-cover cursor-pointer" onclick="window.open('${src}')">`
-    ).join('');
 }
 
-function renderCategories() {
-    const cats = [...new Set(products.map(p => p.category))];
-    document.getElementById('categoryFilters').innerHTML = cats.map(c => 
-        `<button onclick="filterCategory('${c}')" class="px-5 py-2 bg-white rounded-full shadow whitespace-nowrap">${c}</button>`
-    ).join('');
+function loadAdminPanel(title) {
+    hideLogin();
+    document.getElementById('landing').classList.add('hidden');
+    document.getElementById('adminPanel').classList.remove('hidden');
+    document.getElementById('panelTitle').textContent = title;
+    switchTab(0);
 }
 
-function renderMenu(filtered = products) {
-    document.getElementById('menuGrid').innerHTML = filtered.map(p => `
-        <div class="bg-white rounded-3xl shadow card-hover overflow-hidden">
-            <img src="${p.image}" class="w-full h-48 object-cover">
-            <div class="p-4">
-                <h3 class="font-bold">${p.name}</h3>
-                <p class="text-sm text-gray-600">${p.description}</p>
-                <div class="flex justify-between mt-4">
-                    <span class="text-xl font-bold text-emerald-600">₡${p.price}</span>
-                    <button onclick="addToCart(${p.id})" class="bg-emerald-600 text-white px-5 py-2 rounded-2xl text-sm">Agregar</button>
-                </div>
+// ==================== TABS ADMIN ====================
+function switchTab(tab) {
+    const content = document.getElementById('adminContent');
+    if (tab === 0) {
+        content.innerHTML = `
+            <h2 class="text-2xl font-bold mb-6">Dashboard</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white p-6 rounded-3xl shadow">Pedidos Hoy: <span class="text-4xl font-bold text-pink-600">8</span></div>
+                <div class="bg-white p-6 rounded-3xl shadow">Total Vendido: <span class="text-4xl font-bold text-pink-600">₡124,500</span></div>
             </div>
-        </div>
-    `).join('');
-}
-
-function filterCategory(cat) {
-    const filtered = products.filter(p => p.category === cat);
-    renderMenu(filtered);
-}
-
-function addToCart(id) {
-    const prod = products.find(p => p.id === id);
-    cart.push(prod);
-    document.getElementById('cartBadge').textContent = cart.length;
-    alert(`${prod.name} agregado`);
-}
-
-function toggleCart() {
-    alert("Productos en carrito: " + cart.length);
-}
-
-// ==================== ADMIN ====================
-function renderAdminProducts() {
-    document.getElementById('adminProductList').innerHTML = products.map(p => `
-        <div class="flex justify-between items-center border-b pb-4">
-            <div>
-                <h4 class="font-semibold">${p.name}</h4>
-                <p class="text-sm text-gray-500">₡${p.price} - ${p.category}</p>
-            </div>
-            <button onclick="deleteProduct(${p.id})" class="text-red-500 hover:text-red-700">
-                <i class="fas fa-trash"></i>
-            </button>
-        </div>
-    `).join('');
-    document.getElementById('productCount').textContent = products.length;
-}
-
-function deleteProduct(id) {
-    if (confirm("¿Eliminar este producto?")) {
-        products = products.filter(p => p.id !== id);
-        renderAdminProducts();
+        `;
+    } else if (tab === 1) {
+        content.innerHTML = `<p class="text-xl">Gestión de Productos (aquí se agregarían/editarían)</p>`;
+    } else if (tab === 2) {
+        content.innerHTML = `<p class="text-xl">Lista de Órdenes Recibidas</p>`;
+    } else if (tab === 3) {
+        content.innerHTML = `<p class="text-xl">Configuración: SINPE, WhatsApp, Logo, etc.</p>`;
     }
 }
 
-// Cargar todo
-window.onload = () => {};
+function togglePause() {
+    isPaused = !isPaused;
+    const btn = document.getElementById('pauseBtn');
+    btn.textContent = isPaused ? "Activar Pedidos" : "Pausar Pedidos";
+    btn.style.backgroundColor = isPaused ? "#ef4444" : "";
+    if (isPaused) alert("El restaurante está TEMPORALMENTE CERRADO");
+}
+
+// ==================== LOGOUT ====================
+function logout() {
+    location.reload();
+}
+
+// Checkout de ejemplo (puedes llamarlo desde el carrito)
+function showCheckout() {
+    const method = prompt("Elige método de pago:\n1. Tarjeta\n2. Efectivo\n3. SINPE Móvil");
+    if (method === "3") {
+        alert("SINPE: 8765-4321\n\nEnvía el comprobante por WhatsApp al 8888-8888");
+    } else {
+        alert("Pago registrado correctamente");
+    }
+}
 </script>
 </body>
 </html>
